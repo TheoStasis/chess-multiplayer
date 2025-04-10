@@ -1,9 +1,6 @@
 .game-info {
-  width: 300px;
-  padding: 20px;
-  background-color: #f5f5f5;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  color: #e0e0e0;
 }
 
 .status-section {
@@ -12,13 +9,20 @@
 
 .status-section h3 {
   margin: 0 0 15px 0;
-  color: #333;
+  color: #e0e0e0;
   text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 500;
+  font-size: 18px;
 }
 
 .current-turn, .game-status {
   margin: 10px 0;
   font-size: 16px;
+  background-color: #1e2124;
+  padding: 10px;
+  border-radius: 4px;
+  text-align: center;
 }
 
 .current-turn span, .game-status span {
@@ -26,15 +30,15 @@
 }
 
 .white {
-  color: #333;
+  color: #ffcf87;
 }
 
 .black {
-  color: #000;
+  color: #7fa1ff;
 }
 
 .check {
-  color: #ff4444;
+  color: #ff6b6b;
 }
 
 .checkmate {
@@ -47,23 +51,32 @@
 
 .captured-pieces h3 {
   margin: 0 0 15px 0;
-  color: #333;
+  color: #e0e0e0;
   text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 500;
+  font-size: 18px;
 }
 
 .captured-white, .captured-black {
   margin: 10px 0;
+  background-color: #1e2124;
+  padding: 10px;
+  border-radius: 4px;
 }
 
 .captured-pieces h4 {
   margin: 5px 0;
-  color: #666;
+  color: #8d949c;
+  text-align: center;
 }
 
 .pieces-list {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
+  justify-content: center;
+  min-height: 40px;
 }
 
 .piece {
@@ -73,7 +86,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #fff;
+  background-color: #2a2e32;
   border-radius: 4px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 } 

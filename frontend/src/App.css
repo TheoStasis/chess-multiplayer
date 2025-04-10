@@ -5,8 +5,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #f0f0f0;
+  background-color: #2f3437;
   padding: 20px;
+  color: #ffffff;
 }
 
 .App-logo {
@@ -50,8 +51,10 @@
 }
 
 .chess-game h1 {
-  color: #333;
+  color: #ffffff;
   margin-bottom: 30px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600;
 }
 
 .game-container {
@@ -63,6 +66,10 @@
 
 .board-container {
   flex: 0 0 auto;
+  background-color: #272a2c;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 }
 
 .info-container {
@@ -70,6 +77,13 @@
   flex-direction: column;
   gap: 20px;
   flex: 0 0 300px;
+}
+
+.game-info, .move-history {
+  background-color: #272a2c;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 @media (max-width: 768px) {

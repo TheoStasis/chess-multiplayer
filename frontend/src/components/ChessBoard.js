@@ -7,6 +7,7 @@ const ChessBoard = () => {
   const { gameState, makeMove } = useChess();
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [chess] = useState(new Chess());
+  const [validMoves, setValidMoves] = useState([]);
 
   // Update the chess instance when gameState changes
   React.useEffect(() => {
@@ -16,18 +17,40 @@ const ChessBoard = () => {
   }, [gameState.fen, chess]);
 
   const handleSquareClick = (position) => {
-    if (!selectedSquare) {
-      // First click - select a square
+    // Get the piece at the position
+    const piece = chess.get(position);
+    
+    // If a square is already selected, attempt to make a move
+    if (selectedSquare) {
+      // Check if the clicked square is a valid move
+      if (validMoves.includes(position)) {
+        const move = {
+          from: selectedSquare,
+          to: position
+        };
+        
+        makeMove(move);
+        setSelectedSquare(null);
+        setValidMoves([]);
+      } 
+      // If clicking on a piece of the same color, select that piece instead
+      else if (piece && piece.color === chess.turn()) {
+        // Calculate valid moves for the new selected piece
+        const moves = chess.moves({ square: position, verbose: true });
+        setSelectedSquare(position);
+        setValidMoves(moves.map(move => move.to));
+      } 
+      // If clicking on an invalid square, deselect the current piece
+      else {
+        setSelectedSquare(null);
+        setValidMoves([]);
+      }
+    } 
+    // If no square is selected and a piece of the current turn's color is clicked, select it
+    else if (piece && piece.color === chess.turn()) {
+      const moves = chess.moves({ square: position, verbose: true });
       setSelectedSquare(position);
-    } else {
-      // Second click - make a move
-      const move = {
-        from: selectedSquare,
-        to: position
-      };
-      
-      makeMove(move);
-      setSelectedSquare(null);
+      setValidMoves(moves.map(move => move.to));
     }
   };
 
@@ -39,11 +62,14 @@ const ChessBoard = () => {
         const isLight = (row + col) % 2 === 0;
         const position = `${String.fromCharCode(97 + col)}${8 - row}`;
         const piece = chess.get(position);
+        const isValidMove = validMoves.includes(position);
         
         squares.push(
           <div
             key={`${row}-${col}`}
-            className={`square ${isLight ? 'light' : 'dark'} ${selectedSquare === position ? 'selected' : ''}`}
+            className={`square ${isLight ? 'light' : 'dark'} 
+                      ${selectedSquare === position ? 'selected' : ''}
+                      ${isValidMove ? 'valid-move' : ''}`}
             data-position={position}
             onClick={() => handleSquareClick(position)}
           >
@@ -52,6 +78,8 @@ const ChessBoard = () => {
                 {getPieceSymbol(piece)}
               </div>
             )}
+            {isValidMove && !piece && <div className="move-indicator"></div>}
+            {isValidMove && piece && <div className="capture-indicator"></div>}
           </div>
         );
       }
@@ -62,15 +90,25 @@ const ChessBoard = () => {
   // Get the Unicode symbol for a chess piece
   const getPieceSymbol = (piece) => {
     const symbols = {
-      p: '♟', // pawn
-      n: '♞', // knight
-      b: '♝', // bishop
-      r: '♜', // rook
-      q: '♛', // queen
-      k: '♚'  // king
+      w: {
+        p: '♙', // white pawn
+        n: '♘', // white knight
+        b: '♗', // white bishop
+        r: '♖', // white rook
+        q: '♕', // white queen
+        k: '♔'  // white king
+      },
+      b: {
+        p: '♟', // black pawn
+        n: '♞', // black knight
+        b: '♝', // black bishop
+        r: '♜', // black rook
+        q: '♛', // black queen
+        k: '♚'  // black king
+      }
     };
     
-    return piece.color === 'w' ? symbols[piece.type] : symbols[piece.type];
+    return symbols[piece.color][piece.type];
   };
 
   return (
