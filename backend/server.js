@@ -65,6 +65,13 @@ socket.on('makeMove', ({ gameId, move }) => {
       socket.emit('invalidMove', move);
     }
   });
+
+  // After validating move
+    const status = {
+    check: game.isCheck(),
+    checkmate: game.isCheckmate()
+  };
+  io.to(gameId).emit('moveMade', { fen: game.fen(), status });
 });
 
 httpServer.listen(5000, () => {
