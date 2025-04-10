@@ -21,6 +21,7 @@ export const ChessProvider = ({ children }) => {
     black: []
   });
   const [gameId, setGameId] = useState('test-game');
+  const [promotionSquare, setPromotionSquare] = useState(null);
 
   useEffect(() => {
     // Connect to the backend server
@@ -58,11 +59,9 @@ export const ChessProvider = ({ children }) => {
     });
 
     // Listen for promotion requests
-    socket.on('promotionRequired', ({ square, gameId }) => {
-      // Handle promotion UI here
-      console.log('Promotion required for square:', square);
-      // Default to queen for now
-      socket.emit('promotePawn', { gameId, piece: 'q', square });
+    socket.on('promotionRequired', ({ square }) => {
+      console.log('Promotion required at square:', square);
+      setPromotionSquare(square);
     });
 
     return () => {
@@ -75,14 +74,30 @@ export const ChessProvider = ({ children }) => {
 
   const makeMove = (move) => {
     if (socket) {
+      console.log('Sending move:', move);
       socket.emit('makeMove', { gameId, move });
     }
   };
 
   const promotePawn = (piece, square) => {
     if (socket && gameId) {
-      socket.emit('promotePawn', { gameId, piece, square });
+      console.log('Promoting pawn at', square, 'to', piece);
+      
+      // Create a promotion move
+      const move = {
+        from: square,
+        to: square.charAt(0) + (square.charAt(1) === '7' ? '8' : '1'), // Determine target square
+        promotion: piece
+      };
+      
+      // Send the move with promotion information
+      socket.emit('makeMove', { gameId, move });
+      setPromotionSquare(null);
     }
+  };
+
+  const cancelPromotion = () => {
+    setPromotionSquare(null);
   };
 
   // Get display symbol for a piece type
@@ -104,8 +119,10 @@ export const ChessProvider = ({ children }) => {
     currentTurn,
     capturedPieces,
     gameId,
+    promotionSquare,
     makeMove,
     promotePawn,
+    cancelPromotion,
     getPieceSymbol
   };
 

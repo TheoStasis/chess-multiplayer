@@ -1,0 +1,70 @@
+.promotion-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.promotion-dialog {
+  background-color: #2f3437;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  width: 300px;
+  text-align: center;
+}
+
+.promotion-dialog h3 {
+  color: #e0e0e0;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.promotion-pieces {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 15px;
+}
+
+.promotion-piece {
+  width: 60px;
+  height: 85px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #1e2124;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #fff;
+  transition: transform 0.2s, background-color 0.2s;
+  padding: 8px 0;
+}
+
+.promotion-piece:hover {
+  transform: scale(1.05);
+  background-color: #4b545c;
+}
+
+.piece-symbol {
+  font-size: 40px;
+  margin-bottom: 5px;
+}
+
+.piece-name {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.promotion-info {
+  color: #8d949c;
+  font-size: 12px;
+  margin-top: 10px;
+  font-style: italic;
+} 

@@ -18,6 +18,10 @@
   border-radius: 4px;
   background-color: #1e2124;
   padding: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #3a3f44 #1e2124;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 .moves-list::-webkit-scrollbar {

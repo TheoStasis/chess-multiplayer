@@ -8,6 +8,24 @@ const ChessBoard = () => {
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [chess] = useState(new Chess());
   const [validMoves, setValidMoves] = useState([]);
+  
+  // Find king's position for the current player in check
+  const findKingInCheck = () => {
+    if (!gameState.status || !gameState.status.check) return null;
+    
+    // Find king of the current turn
+    const kingColor = chess.turn();
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const position = `${String.fromCharCode(97 + col)}${8 - row}`;
+        const piece = chess.get(position);
+        if (piece && piece.type === 'k' && piece.color === kingColor) {
+          return position;
+        }
+      }
+    }
+    return null;
+  };
 
   // Update the chess instance when gameState changes
   React.useEffect(() => {
@@ -57,24 +75,28 @@ const ChessBoard = () => {
   // Create an 8x8 grid of squares
   const renderSquares = () => {
     const squares = [];
+    const kingInCheck = findKingInCheck();
+    
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
         const isLight = (row + col) % 2 === 0;
         const position = `${String.fromCharCode(97 + col)}${8 - row}`;
         const piece = chess.get(position);
         const isValidMove = validMoves.includes(position);
+        const isKingInCheck = position === kingInCheck;
         
         squares.push(
           <div
             key={`${row}-${col}`}
             className={`square ${isLight ? 'light' : 'dark'} 
                       ${selectedSquare === position ? 'selected' : ''}
-                      ${isValidMove ? 'valid-move' : ''}`}
+                      ${isValidMove ? 'valid-move' : ''}
+                      ${isKingInCheck ? 'king-in-check' : ''}`}
             data-position={position}
             onClick={() => handleSquareClick(position)}
           >
             {piece && (
-              <div className={`piece ${piece.color} ${piece.type}`}>
+              <div className={`piece ${piece.color} ${piece.type} ${isKingInCheck ? 'king-in-check' : ''}`}>
                 {getPieceSymbol(piece)}
               </div>
             )}

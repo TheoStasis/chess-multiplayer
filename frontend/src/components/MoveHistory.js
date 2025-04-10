@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useChess } from '../context/ChessContext';
 import './MoveHistory.css';
 
 const MoveHistory = () => {
   const { moves } = useChess();
+  const movesListRef = useRef(null);
+  
+  // Auto-scroll to bottom when new moves are added
+  useEffect(() => {
+    if (movesListRef.current) {
+      movesListRef.current.scrollTop = movesListRef.current.scrollHeight;
+    }
+  }, [moves]);
   
   // Organize moves into pairs (white and black moves)
   const renderMoveHistory = () => {
@@ -28,7 +36,7 @@ const MoveHistory = () => {
   return (
     <div className="move-history">
       <h3>Move History</h3>
-      <div className="moves-list">
+      <div className="moves-list" ref={movesListRef}>
         {moves.length > 0 ? renderMoveHistory() : <div className="no-moves">No moves yet</div>}
       </div>
     </div>

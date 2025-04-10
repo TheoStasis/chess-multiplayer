@@ -82,4 +82,24 @@
 .piece.b {
   color: #000;
   text-shadow: 0 0 3px #fff, 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.square.king-in-check {
+  background-color: rgba(255, 0, 0, 0.4) !important;
+}
+
+.piece.king-in-check {
+  color: #ff6b6b;
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+  from {
+    transform: scale(1);
+    text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+  }
+  to {
+    transform: scale(1.1);
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+  }
 } 

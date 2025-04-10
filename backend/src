@@ -98,18 +98,30 @@ io.on('connection', (socket) => {
         
         const gameData = games.get(gameId);
         const game = gameData.chess;
+        
+        // Check if this is a pawn promotion move
+        const sourceSquare = move.from;
+        const targetSquare = move.to;
+        const piece = game.get(sourceSquare);
+        
+        // Check if this is a pawn moving to the last rank
+        if (piece && piece.type === 'p') {
+          const targetRank = targetSquare.charAt(1);
+          if ((piece.color === 'w' && targetRank === '8') || (piece.color === 'b' && targetRank === '1')) {
+            // If no promotion piece specified, request one
+            if (!move.promotion) {
+              socket.emit('promotionRequired', { 
+                square: sourceSquare,
+                gameId 
+              });
+              return;
+            }
+          }
+        }
+        
         const result = game.move(move);
 
         if (result) {
-          // Handle pawn promotion
-          if (result.promotion) {
-            socket.emit('promotionRequired', { 
-              square: result.to,
-              gameId 
-            });
-            return;
-          }
-
           // Process captured piece if any
           gameData.capturedPieces = processCapturedPiece(result, gameData.capturedPieces);
           
