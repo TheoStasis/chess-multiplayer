@@ -20,16 +20,18 @@ export const ChessProvider = ({ children }) => {
     white: [],
     black: []
   });
-  const [gameId, setGameId] = useState(null);
+  const [gameId, setGameId] = useState('test-game');
 
   useEffect(() => {
     // Connect to the backend server
     const newSocket = io('http://localhost:5000');
     setSocket(newSocket);
 
+    newSocket.emit('joinGame', gameId); // Join the game on connection
+
     // Clean up on unmount
     return () => newSocket.disconnect();
-  }, []);
+  }, [gameId]);
 
   useEffect(() => {
     if (!socket) return;

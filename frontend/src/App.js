@@ -8,6 +8,7 @@ import { ChessProvider, useChess } from './context/ChessContext';
 const ChessGame = () => {
   const { moves, currentTurn, gameState, capturedPieces } = useChess();
   
+  
   return (
     <div className="chess-game">
       <h1>Chess Game</h1>

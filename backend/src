@@ -18,55 +18,71 @@ const games = new Map();
 
 // Fix duplicated move handler and add promotion logic
 io.on('connection', (socket) => {
+    // Initialize a new game if it doesn't exist
+    socket.on('joinGame', (gameId) => {
+        if (!games.has(gameId)) {
+            const chess = new Chess();
+            games.set(gameId, { chess, moves: [] });
+        }
+        socket.join(gameId);
+    });
+
     // When a move is made
     socket.on('makeMove', ({ gameId, move }) => {
-      try {
-        const gameData = games.get(gameId);
-        const game = gameData.chess;
-        const result = game.move(move);
-  
-        if (result) {
-          // Handle pawn promotion
-          if (result.promotion) {
-            socket.emit('promotionRequired', { 
-              square: result.to,
-              gameId 
-            });
-            return;
-          }
-  
-          // Update game state
-          gameData.moves.push(move);
-          
-          io.to(gameId).emit('moveMade', {
-            fen: game.fen(),
-            status: {
-              check: game.isCheck(),
-              checkmate: game.isCheckmate()
+        try {
+            const gameData = games.get(gameId);
+            if (!gameData) {
+                socket.emit('invalidMove', move);
+                return;
             }
-          });
+            const game = gameData.chess;
+            const result = game.move(move);
+
+            if (result) {
+                // Handle pawn promotion
+                if (result.promotion) {
+                    socket.emit('promotionRequired', { 
+                        square: result.to,
+                        gameId 
+                    });
+                    return;
+                }
+
+                // Update game state
+                gameData.moves.push(move);
+
+                io.to(gameId).emit('moveMade', {
+                    fen: game.fen(),
+                    status: {
+                        check: game.isCheck(),
+                        checkmate: game.isCheckmate()
+                    },
+                    move
+                });
+            } else {
+                socket.emit('invalidMove', move);
+            }
+        } catch (error) {
+            socket.emit('invalidMove', move);
         }
-      } catch (error) {
-        socket.emit('invalidMove', move);
-      }
     });
-  
+
     // Add promotion handler
     socket.on('promotePawn', ({ gameId, piece, square }) => {
-      const game = games.get(gameId).chess;
-      game.move({
-        from: square,
-        to: square,
-        promotion: piece
-      });
-      
-      io.to(gameId).emit('moveMade', {
-        fen: game.fen(),
-        status: {
-          check: game.isCheck(),
-          checkmate: game.isCheckmate()
-        }
-      });
+        const game = games.get(gameId).chess;
+        game.move({
+            from: square,
+            to: square,
+            promotion: piece
+        });
+
+        io.to(gameId).emit('moveMade', {
+            fen: game.fen(),
+            status: {
+                check: game.isCheck(),
+                checkmate: game.isCheckmate()
+            }
+        });
     });
 });
 
