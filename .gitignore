@@ -1,0 +1,30 @@
+# Node modules
+**/node_modules/
+
+# Environment files
+.env
+.env.local
+*.env*
+
+# Build files
+frontend/build/
+backend/dist/
+
+# Logs
+*.log
+logs/
+
+# Editor files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+
+# Testing
+coverage/
+.nyc_output/
+
+# React
+frontend/.eslintcache
+frontend/.cache/
