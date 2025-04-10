@@ -1,11 +1,13 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import App from "./App";
-import { SocketProvider } from "./contexts/SocketContext";
+import { ChessProvider } from "./context/ChessContext";
 
-ReactDOM.render(
-  <SocketProvider>
+const container = document.getElementById("root");
+const root = createRoot(container);
+
+root.render(
+  <ChessProvider>
     <App />
-  </SocketProvider>,
-  document.getElementById("root")
+  </ChessProvider>
 );
