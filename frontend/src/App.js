@@ -1,13 +1,13 @@
-import { SocketContext } from './contexts/SocketContext';
+import { SocketProvider } from './contexts/SocketContext';
 import Lobby from './components/Lobby';
 
 function App() {
   return (
-    <SocketContext.Provider>
+    <SocketProvider>
       <div className="App">
         <Lobby />
       </div>
-    </SocketContext.Provider>
+    </SocketProvider>
   );
 }
 
