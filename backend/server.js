@@ -43,6 +43,28 @@ io.on('connection', (socket) => {
 
   // Basic ping-pong
   socket.on('ping', (cb) => cb('pong'));
+
+  // Add to socket.io connection handler
+socket.on('makeMove', ({ gameId, move }) => {
+    try {
+      const game = games.get(gameId).chess;
+      const result = game.move(move);
+  
+      if (result) {
+        // Broadcast new state to all in room
+        io.to(gameId).emit('moveMade', {
+          fen: game.fen(),
+          turn: game.turn(),
+          status: {
+            check: game.isCheck(),
+            checkmate: game.isCheckmate()
+          }
+        });
+      }
+    } catch (error) {
+      socket.emit('invalidMove', move);
+    }
+  });
 });
 
 httpServer.listen(5000, () => {
