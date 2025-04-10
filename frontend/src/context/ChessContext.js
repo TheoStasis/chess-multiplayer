@@ -36,10 +36,20 @@ export const ChessProvider = ({ children }) => {
   useEffect(() => {
     if (!socket) return;
 
-    // Listen for move updates
-    socket.on('moveMade', ({ fen, status }) => {
+    // Handle initial game state
+    socket.on('gameState', ({ fen, status, moves, capturedPieces }) => {
       setGameState({ fen, status });
-      setCurrentTurn(prev => prev === 'White' ? 'Black' : 'White');
+      setMoves(moves || []);
+      if (capturedPieces) setCapturedPieces(capturedPieces);
+      setCurrentTurn(fen.split(' ')[1] === 'w' ? 'White' : 'Black');
+    });
+
+    // Listen for move updates
+    socket.on('moveMade', ({ fen, status, moves, capturedPieces }) => {
+      setGameState({ fen, status });
+      setMoves(moves || []);
+      if (capturedPieces) setCapturedPieces(capturedPieces);
+      setCurrentTurn(fen.split(' ')[1] === 'w' ? 'White' : 'Black');
     });
 
     // Listen for invalid moves
@@ -51,9 +61,12 @@ export const ChessProvider = ({ children }) => {
     socket.on('promotionRequired', ({ square, gameId }) => {
       // Handle promotion UI here
       console.log('Promotion required for square:', square);
+      // Default to queen for now
+      socket.emit('promotePawn', { gameId, piece: 'q', square });
     });
 
     return () => {
+      socket.off('gameState');
       socket.off('moveMade');
       socket.off('invalidMove');
       socket.off('promotionRequired');
@@ -61,7 +74,7 @@ export const ChessProvider = ({ children }) => {
   }, [socket]);
 
   const makeMove = (move) => {
-    if (socket && gameId) {
+    if (socket) {
       socket.emit('makeMove', { gameId, move });
     }
   };
@@ -72,6 +85,19 @@ export const ChessProvider = ({ children }) => {
     }
   };
 
+  // Get display symbol for a piece type
+  const getPieceSymbol = (pieceType) => {
+    const symbols = {
+      p: '♟',
+      n: '♞',
+      b: '♝',
+      r: '♜',
+      q: '♛',
+      k: '♚'
+    };
+    return symbols[pieceType] || '';
+  };
+
   const value = {
     gameState,
     moves,
@@ -79,7 +105,8 @@ export const ChessProvider = ({ children }) => {
     capturedPieces,
     gameId,
     makeMove,
-    promotePawn
+    promotePawn,
+    getPieceSymbol
   };
 
   return (

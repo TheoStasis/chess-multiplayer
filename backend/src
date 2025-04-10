@@ -16,73 +16,156 @@ const io = new Server(httpServer, {
 // Game state storage
 const games = new Map();
 
-// Fix duplicated move handler and add promotion logic
+// Initialize a new game
+function createNewGame() {
+  return {
+    chess: new Chess(),
+    moves: [],
+    capturedPieces: {
+      white: [],
+      black: []
+    }
+  };
+}
+
+// Process captured piece
+function processCapturedPiece(move, capturedPieces) {
+  if (move.captured) {
+    if (move.color === 'w') {
+      capturedPieces.white.push(move.captured);
+    } else {
+      capturedPieces.black.push(move.captured);
+    }
+  }
+  return capturedPieces;
+}
+
+// Get move in algebraic notation
+function getMoveText(move) {
+  let moveText = '';
+  
+  // Add piece letter for non-pawns
+  if (move.piece !== 'p') {
+    moveText += move.piece.toUpperCase();
+  }
+  
+  // If it's a capture
+  if (move.captured) {
+    if (move.piece === 'p') {
+      moveText += move.from[0]; // Add file for pawn captures
+    }
+    moveText += 'x';
+  }
+  
+  moveText += move.to;
+  
+  // Add promotion piece
+  if (move.promotion) {
+    moveText += '=' + move.promotion.toUpperCase();
+  }
+  
+  return moveText;
+}
+
 io.on('connection', (socket) => {
     // Initialize a new game if it doesn't exist
     socket.on('joinGame', (gameId) => {
         if (!games.has(gameId)) {
-            const chess = new Chess();
-            games.set(gameId, { chess, moves: [] });
+            games.set(gameId, createNewGame());
         }
         socket.join(gameId);
+        
+        // Send initial game state
+        const gameData = games.get(gameId);
+        socket.emit('gameState', {
+            fen: gameData.chess.fen(),
+            status: {
+                check: gameData.chess.isCheck(),
+                checkmate: gameData.chess.isCheckmate()
+            },
+            moves: gameData.moves,
+            capturedPieces: gameData.capturedPieces
+        });
     });
 
     // When a move is made
     socket.on('makeMove', ({ gameId, move }) => {
-        try {
-            const gameData = games.get(gameId);
-            if (!gameData) {
-                socket.emit('invalidMove', move);
-                return;
-            }
-            const game = gameData.chess;
-            const result = game.move(move);
-
-            if (result) {
-                // Handle pawn promotion
-                if (result.promotion) {
-                    socket.emit('promotionRequired', { 
-                        square: result.to,
-                        gameId 
-                    });
-                    return;
-                }
-
-                // Update game state
-                gameData.moves.push(move);
-
-                io.to(gameId).emit('moveMade', {
-                    fen: game.fen(),
-                    status: {
-                        check: game.isCheck(),
-                        checkmate: game.isCheckmate()
-                    },
-                    move
-                });
-            } else {
-                socket.emit('invalidMove', move);
-            }
-        } catch (error) {
-            socket.emit('invalidMove', move);
+      try {
+        if (!games.has(gameId)) {
+          games.set(gameId, createNewGame());
+          socket.join(gameId);
         }
+        
+        const gameData = games.get(gameId);
+        const game = gameData.chess;
+        const result = game.move(move);
+
+        if (result) {
+          // Handle pawn promotion
+          if (result.promotion) {
+            socket.emit('promotionRequired', { 
+              square: result.to,
+              gameId 
+            });
+            return;
+          }
+
+          // Process captured piece if any
+          gameData.capturedPieces = processCapturedPiece(result, gameData.capturedPieces);
+          
+          // Get move text in algebraic notation
+          const moveText = getMoveText(result);
+          gameData.moves.push(moveText);
+          
+          // Emit the updated game state
+          io.to(gameId).emit('moveMade', {
+            fen: game.fen(),
+            status: {
+              check: game.isCheck(),
+              checkmate: game.isCheckmate()
+            },
+            moves: gameData.moves,
+            capturedPieces: gameData.capturedPieces,
+            lastMove: result
+          });
+        } else {
+          socket.emit('invalidMove', move);
+        }
+      } catch (error) {
+        console.error('Error making move:', error);
+        socket.emit('invalidMove', move);
+      }
     });
 
     // Add promotion handler
     socket.on('promotePawn', ({ gameId, piece, square }) => {
-        const game = games.get(gameId).chess;
-        game.move({
-            from: square,
-            to: square,
-            promotion: piece
-        });
-
+      const gameData = games.get(gameId);
+      const game = gameData.chess;
+      const result = game.move({
+        from: square,
+        to: square,
+        promotion: piece
+      });
+      
+      if (result) {
+        // Process captured piece if any
+        gameData.capturedPieces = processCapturedPiece(result, gameData.capturedPieces);
+        
+        // Get move text in algebraic notation
+        const moveText = getMoveText(result);
+        gameData.moves.push(moveText);
+        
         io.to(gameId).emit('moveMade', {
-            fen: game.fen(),
-            status: {
-                check: game.isCheck(),
-                checkmate: game.isCheckmate()
-            }
+          fen: game.fen(),
+          status: {
+            check: game.isCheck(),
+            checkmate: game.isCheckmate()
+          },
+          moves: gameData.moves,
+          capturedPieces: gameData.capturedPieces,
+          lastMove: result
         });
+      }
     });
 });
 

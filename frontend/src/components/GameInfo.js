@@ -1,7 +1,30 @@
 import React from 'react';
+import { useChess } from '../context/ChessContext';
 import './GameInfo.css';
 
-const GameInfo = ({ currentTurn, gameStatus, capturedPieces }) => {
+const GameInfo = () => {
+  const { currentTurn, gameState, capturedPieces, getPieceSymbol } = useChess();
+  
+  // Render captured pieces with proper symbols
+  const renderCapturedPieces = (pieces, color) => {
+    if (!pieces || pieces.length === 0) {
+      return <div className="no-pieces">None</div>;
+    }
+    
+    return pieces.map((piece, index) => (
+      <span key={`${color}-${index}`} className="piece">
+        {getPieceSymbol(piece)}
+      </span>
+    ));
+  };
+
+  // Determine game status text
+  const getGameStatus = () => {
+    if (gameState.status.checkmate) return 'Checkmate';
+    if (gameState.status.check) return 'Check';
+    return 'In Progress';
+  };
+
   return (
     <div className="game-info">
       <div className="status-section">
@@ -9,11 +32,9 @@ const GameInfo = ({ currentTurn, gameStatus, capturedPieces }) => {
         <div className="current-turn">
           Current Turn: <span className={currentTurn.toLowerCase()}>{currentTurn}</span>
         </div>
-        {gameStatus && (
-          <div className="game-status">
-            Status: <span className={gameStatus.toLowerCase()}>{gameStatus}</span>
-          </div>
-        )}
+        <div className="game-status">
+          Status: <span className={gameState.status.checkmate ? 'checkmate' : gameState.status.check ? 'check' : ''}>{getGameStatus()}</span>
+        </div>
       </div>
       
       <div className="captured-pieces">
@@ -21,17 +42,13 @@ const GameInfo = ({ currentTurn, gameStatus, capturedPieces }) => {
         <div className="captured-white">
           <h4>White</h4>
           <div className="pieces-list">
-            {capturedPieces.white.map((piece, index) => (
-              <span key={`white-${index}`} className="piece">{piece}</span>
-            ))}
+            {renderCapturedPieces(capturedPieces.white, 'white')}
           </div>
         </div>
         <div className="captured-black">
           <h4>Black</h4>
           <div className="pieces-list">
-            {capturedPieces.black.map((piece, index) => (
-              <span key={`black-${index}`} className="piece">{piece}</span>
-            ))}
+            {renderCapturedPieces(capturedPieces.black, 'black')}
           </div>
         </div>
       </div>
